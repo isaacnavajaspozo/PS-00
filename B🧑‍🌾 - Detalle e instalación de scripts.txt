@@ -8,3 +8,7 @@
 # anacron para automátizar antivirus
 # iptables sin acceso al resto de la red
 # disco que se importa y exporta
+
+# equipo personal
+# antivirus
+# script ODrive
