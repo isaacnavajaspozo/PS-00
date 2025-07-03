@@ -1,0 +1,10 @@
+# Debian 12 · Isaac Navajas
+# 29/06/2025
+
+#===========================================================================================================================
+
+# script inizializador
+# anacron para monitorizar el sensors 
+# anacron para automátizar antivirus
+# iptables sin acceso al resto de la red
+# disco que se importa y exporta
