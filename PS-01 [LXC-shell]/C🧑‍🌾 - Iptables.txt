@@ -1,0 +1,35 @@
+# /etc/iptables.rules
+# Reglas para aislar un servidor: todo DROP excepto loopback y SSH desde 192.168.1.0/24
+vim /etc/iptables/rules.v4
+----------------------------------------------------------------------------------------
+*filter
+
+# 1) Políticas por defecto: BLOQUEAR TODO
+:INPUT   DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT  DROP [0:0]
+
+# 2) Permitir tráfico de loopback
+-A INPUT  -i lo -j ACCEPT
+-A OUTPUT -o lo -j ACCEPT
+
+# 3) Permitir SSH desde cualquier IP de la LAN 192.168.1.0/24
+#    Ajusta la red a tu esquema si usas otro rango
+#    INPUT: permitir conexiones NEW y ESTABLISHED hacia el puerto 22
+-A INPUT  -p tcp -s 192.168.1.0/24 --dport 22 \
+          -m state --state NEW,ESTABLISHED -j ACCEPT
+#    OUTPUT: permitir respuestas ESTABLISHED de vuelta
+-A OUTPUT -p tcp -d 192.168.1.0/24 --sport 22 \
+          -m state --state ESTABLISHED -j ACCEPT
+
+# 4) (Opcional) Permitir resolución DNS
+#    Reemplaza 192.168.1.1 por tu servidor DNS si lo necesitas
+-A OUTPUT -p udp -d 192.168.1.1 --dport 53 -j ACCEPT
+-A INPUT  -p udp -s 192.168.1.1 --sport 53 -j ACCEPT
+
+# 5) (Opcional) Logs de DROP
+#-A INPUT   -j LOG --log-prefix "IPTables-DROP INPUT: " --log-level 4
+#-A OUTPUT  -j LOG --log-prefix "IPTables-DROP OUTPUT: " --log-level 4
+
+COMMIT
+----------------------------------------------------------------------------------------
