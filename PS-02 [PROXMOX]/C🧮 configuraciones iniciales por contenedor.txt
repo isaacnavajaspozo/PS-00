@@ -22,7 +22,11 @@ systemctl status sshd
 systemctl enable sshd
 
 ========================================================================================================
-[🪖📩 INSTALAR ANTIVIRUS]::
+[📩 EJECUTO SCRIPT]::
+# ejecuto script-00.sh
+
+========================================================================================================
+[🪖 INSTALAR ANTIVIRUS]::
 # paquetes de Linux de utilización rápida y práctica (escaneres):
 # 💯 realizo la instalación de un antivirus para automatizar el escaner de archivos corruptos en el servidor
 
