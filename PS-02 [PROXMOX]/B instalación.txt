@@ -1,12 +1,12 @@
 ============[Reducción consumo Prxmox]=================================================================================
-## desactivar todas las partes de la bios que no vayamos a necesitar
+## [opcional] - desactivar todas las partes de la bios que no vayamos a necesitar
 # lo primero es actualizar la bios para tener más opciones de configuración
 
 # estándar que permite al sistema operativo gestionar la energía de los dispositivos de hardware y controlar funciones como la suspensión, el apagado y la administración de energía de los componentes del sistema.
-BIOS > ACPI Settings > Enable ACPI Auto Configuration : Enabled
+# BIOS > ACPI Settings > Enable ACPI Auto Configuration : Enabled
 
 # desactivar sata (en el caso de que no vaya a utilizarlos)
-SATA Configuration > SATA Controller > Disabled
+# SATA Configuration > SATA Controller > Disabled
 
 ## Proxmox
 # Scaling governors (lo hago más adelante)
@@ -14,11 +14,11 @@ SATA Configuration > SATA Controller > Disabled
 # script para activar el auto ASPM (cuidado porque las tarjetas de red podrián no funcionar bien...)
 # https://github.com/notthebee/AutoASPM
 # https://raw.githubusercontent.com/notthebee/AutoASPM/refs/heads/main/autoaspm.py
-wget https://raw.githubusercontent.com/notthebee/AutoASPM/refs/heads/main/autoaspm.py
-phyton3 autospm.py
+# wget https://raw.githubusercontent.com/notthebee/AutoASPM/refs/heads/main/autoaspm.py
+# phyton3 autospm.py
 
 ## otra configuración: activación y desactivación automática
-Configurar el RTC en la BIOS para encender el propio pc, programandolo para encenderlo y apagarlo automáticamente
+# Configurar el RTC en la BIOS para encender el propio pc, programandolo para encenderlo y apagarlo automáticamente
 
 
 ============[instalación scripts]=====================================================================================
