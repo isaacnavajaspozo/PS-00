@@ -13,6 +13,7 @@ nano /etc/ssh/sshd_config
 ----------------------------------------------------------------------------
     Port 22
     PasswordAuthentication yes
+    PermitRootLogin yes
 ----------------------------------------------------------------------------
 
 # Inicializo el servicio y lo habilito para inicio de la sesión
