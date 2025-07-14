@@ -20,6 +20,7 @@ htts://<ip>:8006
 vim ~/.bashrc
 --------------------------------------------------------------
 ## alias del servidor
+# **************************************
 alias ls='ls -ha --color=auto --group-directories-first'
 alias la='ls  -lhai --group-directories-first'
 alias _liberarespacioram='sudo sync; echo 1 | sudo tee /proc/sys/vm/drop_caches | echo "pe    tición realizada correctamente." && echo "" && free -h'
@@ -28,25 +29,28 @@ alias mv='mv -i'
 alias rm='rm -i'
 alias grep='grep --color=auto'
 alias df='df --exclude-type=tmpfs'
+alias lsblk='lsblk -e7 -o NAME,MAJ:MIN,RM,SIZE,RO,TYPE,MOUNTPOINT,FSTYPE,MODEL,MODE,STATE,VENDOR,UUID'
 
-## Cambiar diseño del prompt (estilo cyberpunk)
+## Cambiar diseño del prompt 
 # **************************************
 PS1='\[\e[1;31m\]\u箱[\H] \w $: \[\e[0m\]'
 
-## cambiar colores para ls (estilo cyberpunk)
+## cambiar colores para ls 
 # **************************************
-# Estilo técnico oscuro
 LS_COLORS=""
-LS_COLORS+="di=1;38;5;240:"     # directorios en gris oscuro técnico
-LS_COLORS+="fi=0;38;5;248:"     # archivos normales en gris medio
-LS_COLORS+="ln=1;33:"           # enlaces simbólicos en amarillo
-LS_COLORS+="so=1;38;5;94:"      # sockets en púrpura oscuro
-LS_COLORS+="pi=1;33:"           # pipes (tuberías) en amarillo
-LS_COLORS+="bd=1;38;5;236:"     # dispositivos de bloque en gris carbón
-LS_COLORS+="cd=1;38;5;238:"     # dispositivos de carácter en gris plomo
-LS_COLORS+="or=1;38;5;124:"     # archivos rotos en rojo sangre oscuro
-LS_COLORS+="mi=1;38;5;124:"     # archivos inexistentes en rojo sangre oscuro
-LS_COLORS+="ex=1;31"            # ejecutables en rojo brillante
+LS_COLORS+="di=1;30:"           # directorios en gris oscuro técnico (sin fondo)
+LS_COLORS+="fi=0;37:"           # archivos normales en gris medio (sin fondo)
+LS_COLORS+="ln=1;33:"           # enlaces simbólicos en amarillo (sin fondo)
+LS_COLORS+="so=1;35:"           # sockets en púrpura oscuro (sin fondo)
+LS_COLORS+="pi=1;33:"           # pipes (tuberías) en amarillo (sin fondo)
+LS_COLORS+="bd=1;30:"           # dispositivos de bloque en gris carbón (sin fondo)
+LS_COLORS+="cd=1;30:"           # dispositivos de carácter en gris plomo (sin fondo)
+LS_COLORS+="or=1;31:"           # archivos rotos en rojo sangre oscuro (sin fondo)
+LS_COLORS+="mi=1;31:"           # archivos inexistentes en rojo sangre oscuro (sin fondo)
+LS_COLORS+="ex=1;31:"           # ejecutables en rojo brillante (sin fondo)
+
+# Exportar la variable LS_COLORS
+export LS_COLORS
 --------------------------------------------------------------
 
 # modifico el archivo vim
