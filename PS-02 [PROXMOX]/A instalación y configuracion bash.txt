@@ -1,0 +1,180 @@
+============[instalación]==============================================================================================
+## recursos del mini-pc para Proxmox VE · Mini PC NiPoGi AK1 Plus 16GB:
++ CPU: 	  Intel Celeron J4125 (4 núcleos / 4 hilos, 2.0 GHz base, 2.7 GHz turbo)
++ RAM: 	  16 GB DDR4
++ Disco:  SSD M.2 NVMe 500 GB
++ Red: 	  Ethernet Gigabit 1 Gbps + Wi-Fi 5 (802.11ac)
+
+## acceso proxmox instalación
+Proxmox Virtual Environment : https://www.proxmox.com/en/downloads [Proxmox VE 8.4 ISO Installer]
+- Disco en ext4
+- zona horaria
+- <password-root>
+- ip
+- DNS: 8.8.8.8
+htts://<ip>:8006
+
+============[configuración]============================================================================================
+## SSH
+# entro por ssh y modifico la terminal
+vim ~/.bashrc
+--------------------------------------------------------------
+## alias del servidor
+alias ls='ls -ha --color=auto --group-directories-first'
+alias la='ls  -lhai --group-directories-first'
+alias _liberarespacioram='sudo sync; echo 1 | sudo tee /proc/sys/vm/drop_caches | echo "pe    tición realizada correctamente." && echo "" && free -h'
+alias cp='cp -i'
+alias mv='mv -i'
+alias rm='rm -i'
+alias grep='grep --color=auto'
+alias df='df --exclude-type=tmpfs'
+
+## Cambiar diseño del prompt (estilo cyberpunk)
+# **************************************
+PS1='\[\e[1;31m\]\u箱[\H] \w $: \[\e[0m\]'
+
+## cambiar colores para ls (estilo cyberpunk)
+# **************************************
+# Estilo técnico oscuro
+LS_COLORS=""
+LS_COLORS+="di=1;38;5;240:"     # directorios en gris oscuro técnico
+LS_COLORS+="fi=0;38;5;248:"     # archivos normales en gris medio
+LS_COLORS+="ln=1;33:"           # enlaces simbólicos en amarillo
+LS_COLORS+="so=1;38;5;94:"      # sockets en púrpura oscuro
+LS_COLORS+="pi=1;33:"           # pipes (tuberías) en amarillo
+LS_COLORS+="bd=1;38;5;236:"     # dispositivos de bloque en gris carbón
+LS_COLORS+="cd=1;38;5;238:"     # dispositivos de carácter en gris plomo
+LS_COLORS+="or=1;38;5;124:"     # archivos rotos en rojo sangre oscuro
+LS_COLORS+="mi=1;38;5;124:"     # archivos inexistentes en rojo sangre oscuro
+LS_COLORS+="ex=1;31"            # ejecutables en rojo brillante
+--------------------------------------------------------------
+
+# modifico el archivo vim
+cd /
+vim .vimrc
+--------------------------------------------------------------
+" ~/.vimrc simplificado estilo cyberpunk acorde a LS_COLORS
+set number                                    " Muestra números de línea
+set cursorline                                " Resalta línea actual
+set scrolloff=5                               " Mantiene 5 líneas arriba/abajo
+set incsearch                                 " Búsqueda incremental
+set hlsearch                                  " Resalta resultados búsqueda
+set ignorecase                                " Ignora mayúsculas/minúsculas
+set smartcase                                 " Caso sensible si hay mayúsculas
+set expandtab                                 " Usa espacios en lugar de tabs
+set tabstop=4
+set shiftwidth=4
+set wildmenu                                  " Mejor autocompletado en cmd
+syntax on
+set background=dark
+
+" Colores personalizados básicos para consola
+highlight Normal ctermfg=248 ctermbg=236      " Texto gris medio / fondo gris carbón
+highlight Comment ctermfg=33                  " Comentarios azul marino fuerte
+highlight LineNr ctermfg=240                  " Números gris oscuro
+highlight CursorLine ctermbg=238              " Fondo línea cursor gris plomo
+highlight Keyword ctermfg=61                  " Palabras clave azul cobalto apagado
+highlight Function ctermfg=94                 " Funciones púrpura oscuro
+highlight Statement ctermfg=124               " Sentencias rojo sangre oscuro
+highlight Visual ctermbg=240                  " Selección gris oscuro
+
+set laststatus=2                              " Siempre mostrar línea de estado
+set noerrorbells                              " Sin sonidos de error
+set clipboard=unnamedplus                     " Usa portapapeles del sistema
+--------------------------------------------------------------
+
+# deshabilito el wifi y Bluetooth del mini pc para que a nivel de hardware no emita señal
+ip link set wlp3s0 down
+apt update
+apt install rfkill
+rfkill list
+  #    0: hci0: Bluetooth
+  #            Soft blocked: no
+  #            Hard blocked: no
+  #    1: phy0: Wireless LAN
+  #            Soft blocked: no
+  #            Hard blocked: no
+# bloqueo radio wifi
+rfkill block 1
+# bloqueo radio Bluetooth
+rfkill block 0
+rfkill list
+  #    0: hci0: Bluetooth
+  #            Soft blocked: yes
+  #            Hard blocked: no
+  #    1: phy0: Wireless LAN
+  #            Soft blocked: yes
+  #            Hard blocked: no
+# para volver a activar el radio : rfkill block 1
+# bloqueo el radio wifi desde la bios y compruebo con rfkill list el "Hard blocked: yes" 
+
+
+============[discos]===============================================================================================
+# primero creo el Thinpool y lo añado como almacenamiento
+
+
+# creo la partición mayor en modo LVM-Thin
+Nodo > Disk > LVM-Thin > Create Thinpool 
+  > [ ] add storage    # si lo seleccionas se agregará automáticamente al almacenamiento
+
+# crea un almacenamiento (para asociar el tipo de almacenamiento y agregarlo al nodo)
+Datacenter > Storage > Add > LVM-Thin > Selecciona "nombre-disco"
+# desde aquí configuro el tipo de unidad que voy a crear pudiendo ser por ejemplo en Directory (Disk Image, ISO Image, Container, Backup...)
+# según las opciones que seleccion al clicar en el nodo > storage me dará unas opciones u otras
+
++--------------+-----------------------------+----------------------------------------+
+| Tipo         | Uso adecuado                | Contenido a seleccionar (“Content”)    |
++--------------+-----------------------------+----------------------------------------+
+| LVM-Thin     | Discos para VM/CT           | Disk image, Container                  |
+| LVM          | Solo discos de VM           | Disk image                             |
+| Directory    | Ficheros: ISOs, backups...  | ISO image, Backup, Container, Disk img |
+| ZFS          | Similar a LVM-Thin + snaps  | Disk image, Container, ISO*            |
+| NFS / CIFS   | Almacenamiento en red       | ISO, Backup, Container, Disk image     |
+| Ceph         | Cluster distribuido         | Disk image, Container                  |
++--------------+-----------------------------+----------------------------------------+
+* ZFS solo permite ISO si se monta como dataset compatible
+
+
+
+## en el caso de necesitar más discos físicos 
+----------------------------------------------------------
+# primero creo el Thinpool asignando el disco
+Nodo > Disk > LVM-Thin > Create Thinpool 
+
+# crea un almacenamiento (para asociar el tipo de almacenamiento y agregarlo al nodo)
+Datacenter > Storage > Add > LVM-Thin > Selecciona "nombre-disco"
+
+# compruebo los discos
+lsblk
+
+# libera el punto de montaje
+umount /mnt/"nombre-storage"
+
+# formateo el disco | gestiono particiones MBR | creo la partición
+fdisk /dev/sda  
+  - d  # Eliminar particiones existentes (puedes repetir si hay varias).
+  - n  # Crear nueva partición (por defecto, usa todo el disco).
+  - t  # (opcional) Cambiar tipo a 8e si vas a usar LVM.
+  - w  # Guardar los cambios
+
+# comando del paquete LVM (Logical Volume Manager) que muestra información detallada sobre los volúmenes físicos (Physical Volumes, PV)
+pvdisplay 
+
+# comando para consultar el estado SMART de un disco
+# S.M.A.R.T = sistema integrado en discos duros y SSDs que permite auto-monitorear su salud y detectar fallos potenciales antes de que ocurran
+smartctl -iHA /dev/sda 
+----------------------------------------------------------
+
+
+# yo en mi caso en local (pve) que es mi unidad de almacenamiento de proxmox no quiero que contenga más de 20GB y por defecto le dá 100GB 
+# compruebo el almacenamiento (90GB)
+lvdisplay /dev/pve/root
+df -h /
+lsblk
+lvdisplay
+vgs
+df -hT
+
+
+
+

@@ -1,0 +1,23 @@
+## Al crear el contendor desde Proxmox tengo que agregarlo como DHCP
+## Nodo > Contenedor > Options > Start at boot : yes        # para encender el contenedor al encender la máquina
+
+========================================================================================================
+[ ]:
+# Amplio tiempo de ssh y deshabilitar la suspensión
+systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+
+# Realizo unos cambios en el archivo de configuración
+nano /etc/ssh/sshd_config
+----------------------------------------------------------------------------
+    Port 22
+    PasswordAuthentication yes
+----------------------------------------------------------------------------
+
+# Inicializo el servicio y lo habilito para inicio de la sesión
+systemctl start sshd
+systemctl status sshd
+systemctl enable sshd
+
+========================================================================================================
+[ ]:
+
