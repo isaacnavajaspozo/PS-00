@@ -34,49 +34,38 @@ systemctl enable sshd
 # instalación antivirus Linux:
 apt install clamav
 apt install clamav-freshclam
-# busco actualizaciones en la base de datos
-sudo freshclam
-# escaneo manualmente el sistema
-# clamscan -[parámetros] [ruta de carpeta]
-# sudo clamscan -r /
-# sudo clamscan -r /home
-# formas de uso con clamav:
-# guardo un registro de archivos infectados
-# sudo clamscan -l /ruta/al/archivo.txt -r /ruta/al/directorio
+# compruebo estado
+systemctl status clamav-freshclam
+# clamav-freshclam actualiza la base de datos por defecto cada 24h lo puedo cambiar desde /etc/clamav/freshclam.conf
+    Checks 24                         # ➡️ 24 intentos por día (una vez por hora)
+    Checks 8                          # ➡️ 8 intentos por día (cada 3 horas, 8 veces al día)
+    Checks 1                          # ➡️ 1 intentos por día (1 veces al día)
 
-# mandar archivo a cuarentena (para no causar daño al servidor):
-# sudo clamscan --move=/path/to/quarantine -r /ruta/al/directorio
-# sudo clamscan --move=/path/to/quarantine -r /ruta/al/directorio -l /ruta/al/archivo.txt
+# escaneo manualmente el sistema, paro el servicio y lo desabilito para poder manjear los tiempos de ejecución semanalmente
+systemctl stop clamav-freshclam
+sudo systemctl disable clamav-freshclam
 
-# borrar archivos maliciosos:
-# sudo clamscan --remove -r /ruta/al/directorio
-# sudo clamscan --remove -r /ruta/al/directorio -l /ruta/al/archivo.txt
+## opcion 1 · configuracion con cron
+crontab -e
+---------------------------------------------------
+# .------------------------ Minuto (0 - 59)
+# |  .--------------------- Hora (0 - 23)
+# |  |  .------------------ Día del mes (1 - 31)
+# |  |  |  .--------------- Mes (1 - 12)
+# |  |  |  |  .------------ Día de la semana (0 - 7) (0 o 7 = Domingo, 1 = Lunes)
+# |  |  |  |  | 
+0 10 *  *  0  nice /usr/bin/clamscan --remove -r / -l /var/clamav/deletefiles.txt
+0 22 1 12 * nice tar -czf /var/clamav/deletefiles_$(date +\%Y-\%m-\%d).tar.gz -C /var/clamav deletefiles.txt && : > /var/clamav/deletefiles.txt
+---------------------------------------------------
+#     - con freshclam, actualizo la base de datos del antivirus.
+#     - con clamscan --remove -r /home -l /home/isaac/ClamAV/deletefiles.txt, elimino automáticamente los archivos infectados de la ruta principal y guarda en mi home un txt con los archivos infectados eliminados.
+#     - con 365 10 backup.deletefiles nice tar -czf /var/clamav/deletefiles_$(date +\%Y-\%m-\%d).tar.gz -C /var/clamav deletefiles.txt && > /var/clamav/deletefiles.txt, una vez al año cojo el archivo deletefiles.txt, lo comprimo en con la fecha actual y creo un nuevo archivo vacío deletefiles.txt.
 
-# actualizar base de datos 
-sudo freshclam
+#creo un script para ejecutarlo de manera manual 
+vim /usr/bin/antivirus
+---------------------------------------------------
+#!/bin/bash
+nice /usr/bin/clamscan --remove -r / -l /var/clamav/deletefiles.txt
+---------------------------------------------------
 
-## 🔢 anacron
-# anacron es ideal para sistemas que no están siempre encendidos (como un pc personal). Ejecuta tareas periódicas aunque el equipo esté apagado en el momento programado.
-# lo que puedo hacer es un anacron y para automatizar el antivirus
-sudo apt install anacron -y
-
-# para ejecutar los comandos necesito privilegios root
-su
-  > ***********
-
-vim /etc/anacrontab
----------------------------------------------------------------------
-# /etc/anacrontab
-# formato: periodo | delay | identificador | comando
-# .---------------------- período en días (1 = diario, 7 = semanal, etc.)
-# | .-------------------- retraso en minutos después del arranque
-# | |      .------------- Identificador de trabajo (utilizado para registros y seguimiento de estado) (restic.weekly, restic.daily)
-# | |      |        .---- comando a ejecutar
-# | |      |        |
-7 10 clamav.weekly nice /usr/bin/freshclam && nice /usr/bin/clamscan --remove -r / -l /var/clamav/deletefiles.txt
-365 10 backup.deletefiles nice tar -czf /var/clamav/deletefiles_$(date +\%Y-\%m-\%d).tar.gz -C /var/clamav deletefiles.txt && > /var/clamav/deletefiles.txt
----------------------------------------------------------------------
-# con freshclam, actualizo la base de datos del antivirus.
-# con clamscan --remove -r /home -l /home/isaac/ClamAV/deletefiles.txt, elimino automáticamente los archivos infectados de la ruta principal y guarda en mi home un txt con los archivos infectados eliminados.
-# con 365 10 backup.deletefiles nice tar -czf /var/clamav/deletefiles_$(date +\%Y-\%m-\%d).tar.gz -C /var/clamav deletefiles.txt && > /var/clamav/deletefiles.txt, una vez al año cojo el archivo deletefiles.txt, lo comprimo en con la fecha actual y creo un nuevo archivo vacío deletefiles.txt.
-
+chmod 750 /usr/bin/antivirus
