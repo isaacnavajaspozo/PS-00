@@ -2,7 +2,7 @@
 ## Nodo > Contenedor > Options > Start at boot : yes        # para encender el contenedor al encender la máquina
 
 # actualizo
-apt updeate && apt upgrade -y
+apt update && apt upgrade -y
 
 ## desde la consola del contenedor a través de proxmox
 # Amplio tiempo de ssh y deshabilitar la suspensión
@@ -20,6 +20,9 @@ nano /etc/ssh/sshd_config
 systemctl start sshd
 systemctl status sshd
 systemctl enable sshd
+
+# reinicio
+reboot now
 
 ========================================================================================================
 [📩 EJECUTO SCRIPT]::
