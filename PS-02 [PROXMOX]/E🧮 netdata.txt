@@ -1,0 +1,125 @@
+===========================================================================================================
+=============[ K  U  M  A ]================================================================================
+
+# update software repositories
+sudo apt update
+
+# install available software updates
+sudo apt upgrade -y
+
+# install prerequisites
+sudo apt install git curl -y
+
+# add nodejs software repository
+curl -sL https://deb.nodesource.com/setup_current.x | sudo bash -
+
+# install nodejs
+sudo apt install nodejs -y
+
+# clone from git
+git clone https://github.com/louislam/uptime-kuma.git ./uptime-kuma
+
+# change directory to ./uptime-kuma
+cd uptime-kuma
+
+# run setup
+npm run setup
+
+# run uptime kuma
+node server/server.js
+
+# pruebo que puedo entrar en la web
+http://<IP-SERVER>:3001
+
+# create nodejs user
+sudo useradd nodejs
+
+# change directory out of uptime-kuma
+cd ..
+
+# move uptime kuma to /opt
+sudo mv ./uptime-kuma /opt
+
+# create service bash file
+sudo nano /opt/uptime-kuma/uptime-kuma.sh
+---------------------------------------------------------------------
+#!/usr/bin/bash
+/usr/bin/node /opt/uptime-kuma/server/server.js
+---------------------------------------------------------------------
+
+# make uptime-kuma.sh executable
+sudo chmod +x /opt/uptime-kuma/uptime-kuma.sh
+
+# create uptime-kuma service file
+sudo nano /etc/systemd/system/uptime-kuma.service
+---------------------------------------------------------------------
+[Unit]
+Description=Uptime Kuma
+
+[Service]
+ExecStart=/opt/uptime-kuma/uptime-kuma.sh
+Restart=always
+User=nodejs
+Group=nodejs
+WorkingDirectory=/opt/uptime-kuma
+
+[Install]
+WantedBy=multi-user.target
+---------------------------------------------------------------------
+
+# set owner of /opt/uptime-kuma
+sudo chown nodejs:nodejs /opt/uptime-kuma -R
+
+# reload systemd services
+sudo systemctl daemon-reload
+
+# start uptime-kuma service on boot and now
+sudo systemctl enable uptime-kuma --now
+
+# ⚠️ la primera vez que entro en la web tengo que crear la cuenta si no lo recuerdo puedo lanzar el siguiente comando
+# cd /opt/uptime-kuma
+# node server/server.js reset-password
+
+# Configuración en el entorno web
+Ajustes > Notificaciones > Configuración notificación
+---------------------------------------------------------------------
+Tipo de notificación: Email (SMTP)
+Nombre sencillo: Gmail Alert
+Nombre del host: smtp.gmail.com
+Puerto: 465
+Seguridad: TLS (465)
+Usuario: <correo-gmail>
+Contraseña: <contraseña-de-aplicacion-de-gmail>
+[x] Habilitado por defecto
+[x] Aplicar en todos los monitores existentes
+---------------------------------------------------------------------
+
+# creo un nuevo panel
+Añadir nuevo panel
+---------------------------------------------------------------------
+Tipo de monitor: Ping
+Nombre sencillo: <nombre>
+Nombre del host: <ip-del-servidor-a-monitorizar>
+---------------------------------------------------------------------
+
+
+
+===========================================================================================================
+=============[ N  E  T  D  A  T  A  ]======================================================================
+
+# ⚠️ este es otro paquete distinto a Kuma pero igualmente para monitorizar
+# ⚠️ lo dejo documentado pero no lo instalo, sirve de reeplazo si no quiero kuma
+https://learn.netdata.cloud/docs/netdata-agent/installation/linux/offline-systems
+
+# preparo el paquete de instalación
+curl https://get.netdata.cloud/kickstart.sh > /tmp/netdata-kickstart.sh
+sh /tmp/netdata-kickstart.sh --release-channel stable --prepare-offline-install-source ./netdata-offline
+
+# realizo la instalación
+cd /netdata-offline
+./kickstart.sh
+./install.sh
+
+# entro en la web
+http://<IP-SERVER>:19999/
+# dentro de la web, página principal hay que pulsar en : Skip and use the dashboard anonymously.
