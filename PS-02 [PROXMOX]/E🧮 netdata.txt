@@ -90,6 +90,7 @@ Puerto: 465
 Seguridad: TLS (465)
 Usuario: <correo-gmail>
 Contraseña: <contraseña-de-aplicacion-de-gmail>
+Asunto Personalizado: 🔔📜 Alerta de monitor | PROXMOX  · root箱[MyKuma] 
 [x] Habilitado por defecto
 [x] Aplicar en todos los monitores existentes
 ---------------------------------------------------------------------
