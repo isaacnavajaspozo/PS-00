@@ -42,8 +42,12 @@ systemctl status clamav-freshclam
     Checks 1                          # ➡️ 1 intentos por día (1 veces al día)
 
 # escaneo manualmente el sistema, paro el servicio y lo desabilito para poder manjear los tiempos de ejecución semanalmente
+# si lo configuro a través 
 systemctl stop clamav-freshclam
 sudo systemctl disable clamav-freshclam
+
+# una vez desabilitados los servicios si que puedo actualizar la base de datos 
+sudo freshclam
 
 ## opcion 1 · configuracion con cron
 crontab -e
@@ -65,7 +69,34 @@ crontab -e
 vim /usr/bin/antivirus
 ---------------------------------------------------
 #!/bin/bash
-nice /usr/bin/clamscan --remove -r / -l /var/clamav/deletefiles.txt
+echo "================================================================="
+echo "  ClamAV / Sistema - Utilidad"
+echo "================================================================="
+echo "1. Actualizar base de datos de ClamAV (freshclam)"
+echo "2. Analizar el sistema"
+echo "3. Salir"
+echo "------------------------------"
+read -p "Elige una opción [1-3]: " opcion
+
+case $opcion in
+  1)
+    echo "➤ Ejecutando freshclam..."
+    echo "➤ Actualizando la base de datos"
+    sudo freshclam
+    ;;
+  2)
+    echo "➤ Analizando..."
+    echo "➤ archivo: /var/clamav/deletefiles.txt"
+    nice /usr/bin/clamscan --remove -r / -l /var/clamav/deletefiles.txt
+    ;;
+  3)
+    echo "Saliendo..."
+    exit 0
+    ;;
+  *)
+    echo "Opción no válida."
+    ;;
+esac
 ---------------------------------------------------
 
 chmod 750 /usr/bin/antivirus
