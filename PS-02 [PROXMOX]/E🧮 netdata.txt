@@ -103,7 +103,8 @@ Nombre sencillo: <nombre>
 Nombre del host: <ip-del-servidor-a-monitorizar>
 ---------------------------------------------------------------------
 
-
+# Finalmente en GMAIL creo una etiqueta con el nombre "🔔📜 PROXMOX" y una regla que todos que tengan el asunto "🔔📜 Alerta de monitor", para que los envie a la etiqueta para poder borrarlos de forma masiva
+ 
 
 ===========================================================================================================
 =============[ N  E  T  D  A  T  A  ]======================================================================
