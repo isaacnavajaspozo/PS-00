@@ -58,7 +58,7 @@ crontab -e
 # |  |  |  .--------------- Mes (1 - 12)
 # |  |  |  |  .------------ Día de la semana (0 - 7) (0 o 7 = Domingo, 1 = Lunes)
 # |  |  |  |  | 
-0 10 *  *  0  nice /usr/bin/clamscan --remove -r / -l /var/clamav/deletefiles.txt
+0 10 *  *  0  nice /usr/bin/clamscan --remove -r / -l /var/clamav/deletefiles.txt && freshclam
 0 22 1 12 * nice tar -czf /var/clamav/deletefiles_$(date +\%Y-\%m-\%d).tar.gz -C /var/clamav deletefiles.txt && : > /var/clamav/deletefiles.txt
 ---------------------------------------------------
 #     - con freshclam, actualizo la base de datos del antivirus.
