@@ -54,7 +54,7 @@ sudo chmod +x /opt/uptime-kuma/uptime-kuma.sh
 sudo nano /etc/systemd/system/uptime-kuma.service
 ---------------------------------------------------------------------
 [Unit]
-Description=Uptime Kuma
+Description=uptime-kuma
 
 [Service]
 ExecStart=/opt/uptime-kuma/uptime-kuma.sh
@@ -107,7 +107,138 @@ Nombre del host: <ip-del-servidor-a-monitorizar>
  
 
 =========================================================================================================
-# aviso del servidor por CPU [monitorización - sobrecalentamiento mini-pc-servidor]:
+# 🧮 aviso del servidor por CPU [monitorización - sobrecalentamiento mini-pc-servidor]:
+
+# instalando paquetes
+sudo apt update
+sudo apt install postfix sensors -y
+
+# compruebo estado
+systemctl status postfix
+
+# copio la version antigua del archivo
+cp /etc/postfix/main.cf /etc/postfix/main.cf.old
+vim /etc/postfix/main.cf
+---------------------------------------------------------------------
+relayhost = [smtp.gmail.com]:587
+smtp_use_tls = yes
+smtp_sasl_auth_enable = yes
+smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd
+smtp_sasl_security_options = noanonymous
+smtp_tls_CAfile = /etc/ssl/certs/ca-certificates.crt
+smtp_address_preference = ipv4
+---------------------------------------------------------------------
+
+# agrego credenciales
+vim /etc/postfix/sasl_passwd
+---------------------------------------------------------------------
+[smtp.gmail.com]:587 tu_correo@gmail.com:tu_contraseña_o_clave_de_aplicación
+---------------------------------------------------------------------
+
+# doy permisos 
+chmod 600 /etc/postfix/sasl_passwd
+
+# compatibilidad de postfix por una versión reciente y estable
+postconf compatibility_level=3.6
+
+# recargo servicio
+sudo postfix reload
+
+# enviar correo
+echo "Correo de prueba enviado desde Postfix usando Gmail" | mail -s "Prueba Exitosa" destinatario@gmail.com
+
+# comprobar que se a enviado
+mailq                                 # Ver cola
+tail -f /var/log/mail.log             # Ver envíos en tiempo real y comprobar fallos
+
+# desarrollo el script para avisar si la CPU sobrepasa los 80º (con el comando sensors)
+vim /usr/local/bin/check_temp_loop.sh
+---------------------------------------------------------------------
+#!/bin/bash
+GMAIL_TO="destino@gmail.com"
+TEMP_LIMIT=80.0
+SLEEP_INTERVAL=60
+ALERT_INTERVAL=2400
+TIMESTAMP_FILE="/tmp/cpu_alert_timestamp"
+
+while true; do
+    temp=$(sensors | awk '/Package id 0/ {gsub(/\+|°C/, "", $4); print $4; exit}')
+    [[ -z "$temp" ]] && temp=$(sensors | awk '/Core 0/ {gsub(/\+|°C/, "", $3); print $3; exit}')
+
+    if [[ -z "$temp" ]]; then
+        echo "[$(date)] No se pudo leer la temperatura." >> /var/log/check_temp_loop.log
+    elif (( $(echo "$temp > $TEMP_LIMIT" | bc -l) )); then
+        now=$(date +%s)
+        last_alert=0
+        [[ -f "$TIMESTAMP_FILE" ]] && last_alert=$(cat "$TIMESTAMP_FILE")
+
+        if (( now - last_alert > ALERT_INTERVAL )); then
+            echo "[$(date)] Temperatura alta: $temp°C. Enviando alerta..." >> /var/log/check_temp_loop.log
+            echo -e "⚠️ ALERTA:\n\nLa CPU de $(hostname) ha alcanzado los $temp°C." | mail -s "⚠️ ALERTA CPU - $(hostname)" "$GMAIL_TO"
+            echo "$now" > "$TIMESTAMP_FILE"
+        fi
+    else
+        [[ -f "$TIMESTAMP_FILE" ]] && rm "$TIMESTAMP_FILE"
+    fi
+
+    sleep "$SLEEP_INTERVAL"
+done
+---------------------------------------------------------------------
+
+# doy permisos 
+chmod +x /usr/local/bin/check_temp_loop.sh
+
+# creo un systemd para lectura continua del servicio
+vim /etc/systemd/system/check_temp.service
+---------------------------------------------------------------------
+[Unit]
+Description=monitor-cpu
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/check_temp_loop.sh
+Restart=always
+RestartSec=5
+User=root
+
+[Install]
+WantedBy=multi-user.target
+---------------------------------------------------------------------
+
+# Recargar systemd
+systemctl daemon-reexec
+systemctl daemon-reload
+
+# Habilitar e iniciar
+systemctl enable --now check_temp.service
+
+# Ver estado
+systemctl status check_temp.service
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # instalo dependencias
 apt install postfix mailutils libsasl2-modules bc
@@ -186,7 +317,7 @@ chmod +x /usr/local/bin/check_temp_loop.sh
 vim /etc/systemd/system/check_temp.service
 ---------------------------------------------------------------------
 [Unit]
-Description=Monitor continuo de temperatura de CPU
+Description=monitor-cpu
 After=network.target
 
 [Service]
