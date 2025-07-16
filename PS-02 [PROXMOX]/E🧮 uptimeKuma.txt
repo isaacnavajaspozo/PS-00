@@ -113,6 +113,109 @@ Nombre del host: <ip-del-servidor-a-monitorizar>
 - esp8266 D1 mini
   + sensor PIR HC-SR501
 
++------------+---------------------+-------------------------------+
+| HC-SR501   | ESP8266 D1 mini     | Descripción                   |
++------------+---------------------+-------------------------------+
+| VCC        | Vin (5V)            | Alimentación                  |
+| GND        | GND                 | Tierra                       |
+| OUT        | D5 (GPIO14)         | Señal digital del sensor      |
++------------+---------------------+-------------------------------+
+
+# Código Arduino IDE para ESP8266 D1 mini + HC-SR501 + envío Gmail SMTP
+# arduino IDE
+---------------------------------------------------------------------
+#include <ESP8266WiFi.h>
+#include <ESP_Mail_Client.h>
+
+// --- Config WiFi ---
+const char* ssid = "TU_SSID";
+const char* password = "TU_PASSWORD";
+
+// --- Config SMTP ---
+#define SMTP_HOST "smtp.gmail.com"
+#define SMTP_PORT 587
+#define AUTHOR_EMAIL "tucorreo@gmail.com"
+#define AUTHOR_PASSWORD "tu_app_password"
+
+// Destinatario
+#define RECIPIENT_EMAIL "destino@gmail.com"
+
+// Pin sensor PIR
+#define PIR_PIN D5
+
+// Variables
+bool lastState = false;
+
+// SMTP Session
+SMTPSession smtp;
+
+void smtpCallback(SMTP_Status status) {
+  Serial.println(status.info());
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(PIR_PIN, INPUT);
+
+  WiFi.begin(ssid, password);
+  Serial.print("Conectando a WiFi...");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("Conectado!");
+
+  // Configurar sesión SMTP
+  smtp.debug(1);
+  ESP_Mail_Session session;
+  session.server.host_name = SMTP_HOST;
+  session.server.port = SMTP_PORT;
+  session.login.email = AUTHOR_EMAIL;
+  session.login.password = AUTHOR_PASSWORD;
+  session.login.user_domain = "";
+
+  smtp.callback(smtpCallback);
+  smtp.session.setSession(session);
+}
+
+void loop() {
+  bool motionDetected = digitalRead(PIR_PIN) == HIGH;
+
+  if (motionDetected && !lastState) {
+    Serial.println("Movimiento detectado, enviando email...");
+    sendEmail();
+    lastState = true;
+  } else if (!motionDetected && lastState) {
+    Serial.println("Sin movimiento");
+    lastState = false;
+  }
+
+  delay(500); // Anti-rebote simple
+}
+
+void sendEmail() {
+  SMTP_Message message;
+
+  message.sender.name = "ESP8266 PIR Sensor";
+  message.sender.email = AUTHOR_EMAIL;
+  message.subject = "Alerta: Movimiento Detectado!";
+  message.addRecipient("Destinatario", RECIPIENT_EMAIL);
+
+  message.text.content = "Se ha detectado movimiento en el sensor PIR HC-SR501 conectado al ESP8266.";
+
+  if (!smtp.connect()) {
+    Serial.println("Error conectando al servidor SMTP");
+    return;
+  }
+
+  if (!MailClient.sendMail(&smtp, &message)) {
+    Serial.println("Error enviando email, " + smtp.errorReason());
+  } else {
+    Serial.println("Email enviado!");
+  }
+}
+---------------------------------------------------------------------
+
 # Crear nuevo monitor :: configurar un ping a la esp para saber si esta apagada o encendida
 - de la misma manera que en la parte de arriba con PING
 
