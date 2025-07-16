@@ -132,7 +132,7 @@ smtp_address_preference = ipv4
 # agrego credenciales
 vim /etc/postfix/sasl_passwd
 ---------------------------------------------------------------------
-[smtp.gmail.com]:587 tu_correo@gmail.com:tu_contraseña_o_clave_de_aplicación
+[smtp.gmail.com]:587 correo@gmail.com:tu_contraseña_o_clave_de_aplicación
 ---------------------------------------------------------------------
 
 # doy permisos 
@@ -155,12 +155,10 @@ tail -f /var/log/mail.log             # Ver envíos en tiempo real y comprobar f
 vim /usr/local/bin/check_temp_loop.sh
 ---------------------------------------------------------------------
 #!/bin/bash
-GMAIL_TO="destino@gmail.com"
+GMAIL_TO="correo@gmail.com"
 TEMP_LIMIT=30.0
-SLEEP_INTERVAL=60                                                       # espera 60 segundos (1 minuto)
-ALERT_INTERVAL=1200                                                     # enviará una alerta y luego esperará 1200 segundos (que son 20 minutos) antes de enviar otra alerta
-TIMESTAMP_FILE="/usr/local/bin/cpu_alert_timestamp"                     # último momento en que se envió una alerta
-
+SLEEP_INTERVAL=60
+ALERT_INTERVAL=1200
 TIMESTAMP_FILE="/tmp/cpu_alert_timestamp"
 
 while true; do
@@ -176,7 +174,7 @@ while true; do
 
         if (( now - last_alert > ALERT_INTERVAL )); then
             echo "[$(date)] Temperatura alta: $temp°C. Enviando alerta..." >> /var/log/check_temp_loop.log
-            echo -e "⚠️ ALERTA:\n\nLa CPU de $(hostname) ha alcanzado los $temp°C.\nEl siguiente mensaje no se volverá a mandar hasta los 20 minutos después (aunque aumente la temperatura).\n\nÚltimas 20 líneas del log:\n***********************************************************************************\n$(tail -n 20 /var/log/check_temp_loop.log)\n" | mail -s "🔔⚠️ Alerta de monitor.proxmox - [CPU: $temp°C]" "$GMAIL_TO"
+            echo -e "⚠️ ALERTA:\n\nLa CPU de $(hostname) ha alcanzado los $temp°C.\n\nEl siguiente mensaje no se volverá a mandar hasta los 20 minutos después (aunque aumente la temperatura)." | mail -s "🔔⚠️ Alerta de monitor.proxmox - [CPU: $temp°C]" "$GMAIL_TO"
             echo "$now" > "$TIMESTAMP_FILE"
         fi
     else
