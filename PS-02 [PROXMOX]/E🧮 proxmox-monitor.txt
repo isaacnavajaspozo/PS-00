@@ -173,7 +173,7 @@ while true; do
         [[ -f "$TIMESTAMP_FILE" ]] && last_alert=$(cat "$TIMESTAMP_FILE")
 
         if (( now - last_alert > ALERT_INTERVAL )); then
-            echo "[$(date)] Temperatura alta: $temp°C. Enviando alerta..." >> /var/log/check_temp_loop.log
+            echo "[$(date)] Temperatura alta: $temp°C." >> /var/log/check_temp_loop.log
             echo -e "⚠️ ALERTA:\n\nLa CPU de $(hostname) ha alcanzado los $temp°C.\n\nÚltimas 20 líneas del log:\n$(tail -n 20 /var/log/check_temp_loop.log)\n\nEl siguiente mensaje no se volverá a mandar hasta los 20 minutos después (aunque aumente la temperatura)." | mail -s "🔔⚠️ Alerta de monitor.proxmox - [CPU: $temp°C]" "$GMAIL_TO"
 
             echo "$now" > "$TIMESTAMP_FILE"
