@@ -133,8 +133,8 @@ on
 # si no devuelve la web la palabra on se caera la monitorización
 ---------------------------------------------------------------------
 
-#    HTTP 200 OK con body: "on"	✅ UP
-#    HTTP 200 OK con body: "off"	❌ DOWN
+#    HTTP 200 OK con body: "on"	 ✅ UP
+#    HTTP 200 OK con body: "off" ❌ DOWN
 
 
 
