@@ -121,8 +121,9 @@ Nombre del host: <ip-del-servidor-a-monitorizar>
 | OUT        | D5 (GPIO14)         | Señal digital del sensor      |
 +------------+---------------------+-------------------------------+
 
+# esta sin terminar porque quiero hacer también un servidor web que registre temperatura
 # Código Arduino IDE para ESP8266 D1 mini + HC-SR501 + envío Gmail SMTP
-# arduino IDE
+# arduino IDE - descargar librería : ESP_Mail_Client
 ---------------------------------------------------------------------
 #include <ESP8266WiFi.h>
 #include <ESP_Mail_Client.h>
