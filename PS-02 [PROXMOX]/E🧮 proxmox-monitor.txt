@@ -156,9 +156,11 @@ vim /usr/local/bin/check_temp_loop.sh
 ---------------------------------------------------------------------
 #!/bin/bash
 GMAIL_TO="destino@gmail.com"
-TEMP_LIMIT=80.0
-SLEEP_INTERVAL=60
-ALERT_INTERVAL=2400
+TEMP_LIMIT=30.0
+SLEEP_INTERVAL=60                                                       # espera 60 segundos (1 minuto)
+ALERT_INTERVAL=1200                                                     # enviará una alerta y luego esperará 1200 segundos (que son 20 minutos) antes de enviar otra alerta
+TIMESTAMP_FILE="/usr/local/bin/cpu_alert_timestamp"                     # último momento en que se envió una alerta
+
 TIMESTAMP_FILE="/tmp/cpu_alert_timestamp"
 
 while true; do
@@ -174,7 +176,7 @@ while true; do
 
         if (( now - last_alert > ALERT_INTERVAL )); then
             echo "[$(date)] Temperatura alta: $temp°C. Enviando alerta..." >> /var/log/check_temp_loop.log
-            echo -e "⚠️ ALERTA:\n\nLa CPU de $(hostname) ha alcanzado los $temp°C." | mail -s "⚠️ ALERTA CPU - $(hostname)" "$GMAIL_TO"
+            echo -e "⚠️ ALERTA:\n\nLa CPU de $(hostname) ha alcanzado los $temp°C.\nEl siguiente mensaje no se volverá a mandar hasta los 20 minutos después (aunque aumente la temperatura).\n\nÚltimas 20 líneas del log:\n***********************************************************************************\n$(tail -n 20 /var/log/check_temp_loop.log)\n" | mail -s "🔔⚠️ Alerta de monitor.proxmox - [CPU: $temp°C]" "$GMAIL_TO"
             echo "$now" > "$TIMESTAMP_FILE"
         fi
     else
