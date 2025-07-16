@@ -108,8 +108,10 @@ Nombre del host: <ip-del-servidor-a-monitorizar>
 
 ======================================================================
 # proyecto con esp [monitorización - antirobos]:
-Sensor PIR HC-SR501
-esp8266 LOLIN(WEMOS) D1 R2 & mini
+# una de estas dos esp (porque son mis favoritas y baratas), y el sensor de movimientos soldado 
+- esp8266 LOLIN(WEMOS) D1 R2 & mini
+- esp8266 D1 mini
+  + sensor PIR HC-SR501
 
 # Crear nuevo monitor :: configurar un ping a la esp para saber si esta apagada o encendida
 - de la misma manera que en la parte de arriba con PING
