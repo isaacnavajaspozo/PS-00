@@ -18,8 +18,8 @@ nano /etc/ssh/sshd_config
 
 # Inicializo el servicio y lo habilito para inicio de la sesión
 systemctl start sshd
-systemctl status sshd
 systemctl enable sshd
+systemctl status sshd
 
 # reinicio
 reboot now
