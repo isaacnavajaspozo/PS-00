@@ -24,6 +24,8 @@ systemctl enable sshd
 # reinicio
 reboot now
 
+# Fail2Ban
+
 ========================================================================================================
 [📩 EJECUTO SCRIPT]::
 # ejecuto script-00.sh
