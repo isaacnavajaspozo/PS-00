@@ -106,6 +106,41 @@ Nombre del host: <ip-del-servidor-a-monitorizar>
 # Finalmente en GMAIL creo una etiqueta con el nombre "🔔📜 PROXMOX" y una regla que todos que tengan el asunto "🔔📜 Alerta de monitor", para que los envie a la etiqueta para poder borrarlos de forma masiva
  
 
+======================================================================
+# proyecto con esp [monitorización - antirobos]:
+Sensor PIR HC-SR501
+esp8266 LOLIN(WEMOS) D1 R2 & mini
+
+# Crear nuevo monitor :: configurar un ping a la esp para saber si esta apagada o encendida
+- de la misma manera que en la parte de arriba con PING
+
+# Crear nuevo monitor :: configurar si la respuesta HTTP contiene un texto específico para comprobar movimiento a nivel de Kuma
+---------------------------------------------------------------------
+Tipo: HTTP(s)
+Método: GET
+URL: http://tu_ip_esp:puerto/estado
+(ej: http://192.168.1.100:8080/estado)
+Configura opciones básicas:
+Nombre: Sensor Movimiento
+Intervalo: lo que quieras (ej: 60s)
+Activar la opción de palabra clave (Keyword):
+Marca la opción "Enable keyword check"
+En el campo Keyword, escribe:
+on
+(o lo que deba contener la respuesta)
+# si no devuelve la web la palabra on se caera la monitorización
+---------------------------------------------------------------------
+
+#    HTTP 200 OK con body: "on"	✅ UP
+#    HTTP 200 OK con body: "off"	❌ DOWN
+
+
+
+
+
+
+
+
 ===========================================================================================================
 =============[ N  E  T  D  A  T  A  ]======================================================================
 
