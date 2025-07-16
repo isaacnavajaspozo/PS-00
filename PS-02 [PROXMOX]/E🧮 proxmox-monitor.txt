@@ -156,9 +156,9 @@ vim /usr/local/bin/check_temp_loop.sh
 ---------------------------------------------------------------------
 #!/bin/bash
 GMAIL_TO="correo@gmail.com"
-TEMP_LIMIT=30.0
-SLEEP_INTERVAL=60
-ALERT_INTERVAL=1200
+TEMP_LIMIT=30.0                               # grados de referencia para notificaciones (ej: 80.0)
+SLEEP_INTERVAL=60                             # espera 60 segundos (1 minuto)
+ALERT_INTERVAL=1200                           # espera 1200 segundos (20 minutos)
 TIMESTAMP_FILE="/tmp/cpu_alert_timestamp"
 
 while true; do
