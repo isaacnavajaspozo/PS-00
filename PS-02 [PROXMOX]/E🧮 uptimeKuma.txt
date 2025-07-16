@@ -109,6 +109,91 @@ Nombre del host: <ip-del-servidor-a-monitorizar>
 ======================================================================
 # aviso del servidor por CPU [monitorización - sobrecalentamiento mini-pc-servidor]:
 
+# instalo dependencias
+apt install msmtp msmtp-mta mailutils
+
+# devuelve el numero de grados del CPU 
+sensors | awk '/Package id 0/ {print $4; exit}'
+#  +44.0°C
+
+# creo el archivo para configurar snmp gmail
+vim ~/.msmtprc
+---------------------------------------------------------------------
+defaults
+auth           on
+tls            on
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+logfile        ~/.msmtp.log
+
+account        gmail
+host           smtp.gmail.com
+port           587
+from           tu-correo@gmail.com
+user           tu-correo@gmail.com
+passwordeval   "gpg --no-tty -q -d ~/.gmail_pass.gpg"
+
+account default : gmail
+---------------------------------------------------------------------
+
+# desarrollo el script
+vim /usr/local/bin/check_temp_loop.sh
+---------------------------------------------------------------------
+#!/bin/bash
+
+# CONFIG
+GMAIL_TO="destino@gmail.com"
+TEMP_LIMIT=80.0
+SLEEP_INTERVAL=60  # segundos entre chequeos
+FLAG_FILE="/tmp/cpu_alert_sent"
+
+# LOOP INFINITO
+while true; do
+    temp=$(sensors | awk '/Package id 0/ {gsub(/\+|°C/, "", $4); print $4; exit}')
+    
+    if [[ -z "$temp" ]]; then
+        echo "[$(date)] No se pudo leer la temperatura." >> /var/log/check_temp_loop.log
+    elif (( $(echo "$temp > $TEMP_LIMIT" | bc -l) )); then
+        if [[ ! -f "$FLAG_FILE" ]]; then
+            echo "[$(date)] Temperatura alta: $temp°C. Enviando alerta..." >> /var/log/check_temp_loop.log
+            echo -e "⚠️ ALERTA:\n\nLa CPU de $(hostname) ha alcanzado los $temp°C." \
+                | mail -s "⚠️ ALERTA CPU - $(hostname)" "$GMAIL_TO"
+            touch "$FLAG_FILE"
+        fi
+    else
+        # Temperatura normal, resetear alerta
+        [[ -f "$FLAG_FILE" ]] && rm "$FLAG_FILE"
+    fi
+
+    sleep "$SLEEP_INTERVAL"
+done
+---------------------------------------------------------------------
+
+# creo un systemd para lectura continua del servicio
+vim /etc/systemd/system/check_temp.service
+---------------------------------------------------------------------
+[Unit]
+Description=Monitor continuo de temperatura de CPU
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/check_temp_loop.sh
+Restart=always
+RestartSec=5
+User=root
+
+[Install]
+WantedBy=multi-user.target
+---------------------------------------------------------------------
+
+# Recargar systemd
+systemctl daemon-reexec
+systemctl daemon-reload
+
+# Habilitar e iniciar
+systemctl enable --now check_temp.service
+
+# Ver estado
+systemctl status check_temp.service
 
 
 ======================================================================
