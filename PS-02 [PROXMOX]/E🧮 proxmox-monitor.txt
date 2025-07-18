@@ -190,42 +190,33 @@ done
 
 
 
-
+## segunda opcion
+¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿
 
 #probar este otro script para ver si consume menos CPU
 ------------------------------------------------------------------------------------------------------
 #!/bin/bash
 GMAIL_TO="correo@gmail.com"
 TEMP_LIMIT=80.0                             # temperatura límite realista
-ALERT_INTERVAL=1200                         # 20 minutos entre alertas
-TIMESTAMP_FILE="/tmp/cpu_alert_timestamp"
+LOG_FILE="/var/log/check_temp.log"
 
 # Leer temperatura
 temp=$(sensors | awk '/Package id 0/ {gsub(/\+|°C/, "", $4); print $4; exit}')
 [[ -z "$temp" ]] && temp=$(sensors | awk '/Core 0/ {gsub(/\+|°C/, "", $3); print $3; exit}')
 
 if [[ -z "$temp" ]]; then
-    echo "[$(date)] No se pudo leer la temperatura." >> /var/log/check_temp.log
+    echo "[$(date)] No se pudo leer la temperatura." >> "$LOG_FILE"
     exit 1
 fi
 
 if (( $(echo "$temp > $TEMP_LIMIT" | bc -l) )); then
-    now=$(date +%s)
-    last_alert=0
-    [[ -f "$TIMESTAMP_FILE" ]] && last_alert=$(cat "$TIMESTAMP_FILE")
-
-    if (( now - last_alert > ALERT_INTERVAL )); then
-        echo "[$(date)] Temperatura alta: $temp°C." >> /var/log/check_temp.log
-        echo -e "⚠️ ALERTA:\n\nLa CPU de $(hostname) ha alcanzado los $temp°C.\n\nÚltimas 20 líneas del log:\n$(tail -n 20 /var/log/check_temp.log)" | mail -s "🔔⚠️ Alerta CPU - $temp°C" "$GMAIL_TO"
-        echo "$now" > "$TIMESTAMP_FILE"
-    fi
-else
-    # temperatura bajo límite, borramos el timestamp para resetear alerta futura
-    [[ -f "$TIMESTAMP_FILE" ]] && rm "$TIMESTAMP_FILE"
+    echo "[$(date)] Temperatura alta: $temp°C." >> "$LOG_FILE"
+    echo -e "⚠️ ALERTA:\n\nLa CPU de $(hostname) ha alcanzado los $temp°C.\n\nÚltimas 20 líneas del log:\n$(tail -n 20 "$LOG_FILE")" | mail -s "🔔⚠️ Alerta CPU - $temp°C" "$GMAIL_TO"
 fi
 --------------------------------------------------------------------------------------------------------
 
-
+# con cron en vez como servicio constante con systemctl
+*/20 * * * * /usr/local/bin/check_temp_once.sh
 
 
 
