@@ -397,29 +397,3 @@ on
 #    HTTP 200 OK con body: "on"	 ✅ UP
 #    HTTP 200 OK con body: "off" ❌ DOWN
 
-
-
-
-
-
-
-
-===========================================================================================================
-=============[ N  E  T  D  A  T  A  ]======================================================================
-
-# ⚠️ este es otro paquete distinto a Kuma pero igualmente para monitorizar
-# ⚠️ lo dejo documentado pero no lo instalo, sirve de reeplazo si no quiero kuma
-https://learn.netdata.cloud/docs/netdata-agent/installation/linux/offline-systems
-
-# preparo el paquete de instalación
-curl https://get.netdata.cloud/kickstart.sh > /tmp/netdata-kickstart.sh
-sh /tmp/netdata-kickstart.sh --release-channel stable --prepare-offline-install-source ./netdata-offline
-
-# realizo la instalación
-cd /netdata-offline
-./kickstart.sh
-./install.sh
-
-# entro en la web
-http://<IP-SERVER>:19999/
-# dentro de la web, página principal hay que pulsar en : Skip and use the dashboard anonymously.
