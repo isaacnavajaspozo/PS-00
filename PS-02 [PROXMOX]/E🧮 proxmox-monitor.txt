@@ -153,47 +153,6 @@ tail -f /var/log/mail.log             # Ver envíos en tiempo real y comprobar f
 
 # desarrollo el script para avisar si la CPU sobrepasa los 80º (con el comando sensors)
 vim /usr/local/bin/check_temp_loop.sh
----------------------------------------------------------------------
-#!/bin/bash
-GMAIL_TO="correo@gmail.com"
-TEMP_LIMIT=30.0                               # grados de referencia para notificaciones (ej: 80.0)
-SLEEP_INTERVAL=60                             # espera 60 segundos (1 minuto) hasta volver a ejecutar el script
-ALERT_INTERVAL=1200                           # espera 1200 segundos (20 minutos) hasta volver a enviar la siguiente alerta
-TIMESTAMP_FILE="/tmp/cpu_alert_timestamp"
-
-while true; do
-    temp=$(sensors | awk '/Package id 0/ {gsub(/\+|°C/, "", $4); print $4; exit}')
-    [[ -z "$temp" ]] && temp=$(sensors | awk '/Core 0/ {gsub(/\+|°C/, "", $3); print $3; exit}')
-
-    if [[ -z "$temp" ]]; then
-        echo "[$(date)] No se pudo leer la temperatura." >> /var/log/check_temp_loop.log
-    elif (( $(echo "$temp > $TEMP_LIMIT" | bc -l) )); then
-        now=$(date +%s)
-        last_alert=0
-        [[ -f "$TIMESTAMP_FILE" ]] && last_alert=$(cat "$TIMESTAMP_FILE")
-
-        if (( now - last_alert > ALERT_INTERVAL )); then
-            echo "[$(date)] Temperatura alta: $temp°C." >> /var/log/check_temp_loop.log
-            echo -e "⚠️ ALERTA:\n\nLa CPU de $(hostname) ha alcanzado los $temp°C.\n\nÚltimas 20 líneas del log:\n$(tail -n 20 /var/log/check_temp_loop.log)\n\nEl siguiente mensaje no se volverá a mandar hasta los 20 minutos después (aunque aumente la temperatura)." | mail -s "🔔⚠️ Alerta de monitor.proxmox - [CPU: $temp°C]" "$GMAIL_TO"
-
-            echo "$now" > "$TIMESTAMP_FILE"
-        fi
-    else
-        [[ -f "$TIMESTAMP_FILE" ]] && rm "$TIMESTAMP_FILE"
-    fi
-
-    sleep "$SLEEP_INTERVAL"
-done
----------------------------------------------------------------------
-
-
-
-
-
-## segunda opcion
-¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿¿
-
-#probar este otro script para ver si consume menos CPU
 ------------------------------------------------------------------------------------------------------
 #!/bin/bash
 GMAIL_TO="correo@gmail.com"
@@ -216,50 +175,18 @@ fi
 --------------------------------------------------------------------------------------------------------
 
 # con cron en vez como servicio constante con systemctl
+crontab -e
+--------------------------------------------------------------------------------------------------------
+# Example of job definition:
+# .---------------- minute (0 - 59)
+# |  .------------- hour (0 - 23)
+# |  |  .---------- day of month (1 - 31)
+# |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ...
+# |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
+# |  |  |  |  |
+# *  *  *  *  * user-name command to be executed
 */20 * * * * /usr/local/bin/check_temp_once.sh
-
-
-
-
-
-
-
-
-
-
-
-
-# doy permisos 
-chmod +x /usr/local/bin/check_temp_loop.sh
-
-# creo un systemd para lectura continua del servicio
-vim /etc/systemd/system/check_temp.service
----------------------------------------------------------------------
-[Unit]
-Description=monitor-cpu
-After=network.target
-
-[Service]
-ExecStart=/usr/local/bin/check_temp_loop.sh
-Restart=always
-RestartSec=5
-User=root
-
-[Install]
-WantedBy=multi-user.target
----------------------------------------------------------------------
-
-# Recargar systemd
-systemctl daemon-reexec
-systemctl daemon-reload
-
-# Habilitar e iniciar
-systemctl enable --now check_temp.service
-
-# Ver estado
-systemctl status check_temp.service
-systemctl status check_temp
-
+--------------------------------------------------------------------------------------------------------
 
 
 =========================================================================================================
