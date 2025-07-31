@@ -28,13 +28,13 @@ reboot now
 
 ========================================================================================================
 [📩 EJECUTO SCRIPT]::
+# instalación instantanea del servidor
 # ejecuto script-00.sh
 
 
 ========================================================================================================
 [📈 EJECUTO SCRIPT]::
 # este script evalua la vida del servidor ya sea SMART RAM CPU almacenamiento 
-
 vim /usr/bin/check_health.sh
 ----------------------------------------------------------------------------
 #!/bin/bash
