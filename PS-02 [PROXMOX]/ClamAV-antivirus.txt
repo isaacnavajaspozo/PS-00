@@ -1,1 +1,0 @@
-# antivirus de red con cron para todos los contenedores
