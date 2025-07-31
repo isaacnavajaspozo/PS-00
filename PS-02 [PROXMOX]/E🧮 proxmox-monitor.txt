@@ -201,7 +201,7 @@ crontab -e
 | HC-SR501   | ESP8266 D1 mini     | Descripción                   |
 +------------+---------------------+-------------------------------+
 | VCC        | Vin (5V)            | Alimentación                  |
-| GND        | GND                 | Tierra                       |
+| GND        | GND                 | Tierra                        |
 | OUT        | D5 (GPIO14)         | Señal digital del sensor      |
 +------------+---------------------+-------------------------------+
 
