@@ -84,23 +84,62 @@ Con overcommit moderado (x2 vCPUs)
 
 
 
+========================================================================================================
+[📈 EJECUTO SCRIPT]::
+# este script evalua la vida del servidor ya sea SMART RAM CPU almacenamiento para adelantarme a la vida utíl del hardware
+vim /usr/bin/check_health.sh
+----------------------------------------------------------------------------
+#!/bin/bash
+EMAIL="mi@correo.com"
+HOSTNAME=$(hostname)
+DATE=$(date '+%Y-%m-%d %H:%M:%S')
 
+# Función para instalar paquetes si no existen
+install_if_missing() {
+  command -v "$1" >/dev/null 2>&1 || {
+    echo "Instalando $1..."
+    sudo apt-get update && sudo apt-get install -y "$1"
+  }
+}
 
+# Comprobar e instalar dependencias
+install_if_missing smartctl
+install_if_missing mail
 
+# 1. Estado SMART discos
+DISKS=$(lsblk -dn -o NAME)
+SMART_REPORT=""
+for disk in $DISKS; do
+  SMART=$(sudo smartctl -H /dev/$disk 2>/dev/null | grep 'SMART overall-health self-assessment test result' || echo "No SMART")
+  SMART_REPORT+="Disco /dev/$disk: $SMART\n"
+done
 
+# 2. Uso RAM
+RAM_USED=$(free -h | awk '/^Mem:/ {print $3 " used / " $2 " total"}')
 
+# 3. Uso almacenamiento
+DISK_USAGE=$(df -h --total | awk '/total/ {print $3 " used / " $2 " total (" $5 " used)"}')
 
+# 4. Carga CPU (últimos 1 min)
+LOAD=$(uptime | awk -F'load average:' '{print $2}' | cut -d',' -f1 | xargs)
 
+# 5. Armar mensaje
+MSG="Informe de salud del servidor $HOSTNAME - $DATE
 
+Estado SMART discos:
+$SMART_REPORT
 
+Uso RAM: $RAM_USED
+Uso almacenamiento: $DISK_USAGE
+Carga CPU (1min): $LOAD
+"
 
+# 6. Enviar correo
+echo -e "$MSG" | mail -s "Informe salud servidor $HOSTNAME" $EMAIL
+----------------------------------------------------------------------------
 
-
-
-
-============[Configuración]============================================================================================
-## 
-# proxmox por defecto está configurado para que pagues actualizaciones y mejoras, es por eso que tengo que definir que no quieor suscripción
-Datacenter > (Node) > Updates > Repositories > Disable
-Datacenter > (Node) > Updates > Repositories > Add > No-Subscription > Add
-
+## configuro un cron todos los viernes, sabados y domingos a las 9:30
+crontab -e
+----------------------------------------------------------------------------
+30 21 * * 5,6,0 /usr/bin/check_health.sh
+----------------------------------------------------------------------------
