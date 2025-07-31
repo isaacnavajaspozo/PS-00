@@ -1,2 +1,0 @@
-# creo una cuenta de manera gratuita para almacenar mi backup de manera remota
-https://dashboard.remote-backups.com/login
