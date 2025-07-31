@@ -1,3 +1,8 @@
+# en el caso de necesitar backups:
+# creo una cuenta de manera gratuita para almacenar mi backup de manera remota
+https://dashboard.remote-backups.com/login
+
+
 ============[instalación]==============================================================================================
 ## recursos del mini-pc para Proxmox VE · Mini PC NiPoGi AK1 Plus 16GB:
 + CPU: 	  Intel Celeron J4125 (4 núcleos / 4 hilos, 2.0 GHz base, 2.7 GHz turbo)
