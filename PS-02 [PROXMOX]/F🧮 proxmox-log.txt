@@ -27,6 +27,13 @@ vim /etc/rsyslog.conf
 # o para TCP (más fiable)
 *.* @@IP_DEL_SERVIDOR_RSYSLOG:514
 ---------------------------------------------------------
+# ejemplo
+---------------------------------------------------------
+# Ejemplo UDP (menos fiable, pero más ligero)
+*.* @192.168.1.100:514
+# Ejemplo TCP (más fiable, recomendado)
+*.* @@192.168.1.100:514
+---------------------------------------------------------
 systemctl restart rsyslog
 
 # firewall
