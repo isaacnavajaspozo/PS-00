@@ -82,8 +82,6 @@ Con overcommit moderado (x2 vCPUs)
 +------------+------------+-------------+--------------------------------+--------------------------------------+   +---------------------+
 
 
-
-
 ========================================================================================================
 [📈 EJECUTO SCRIPT]::
 # este script evalua la vida del servidor ya sea SMART RAM CPU almacenamiento para adelantarme a la vida utíl del hardware
