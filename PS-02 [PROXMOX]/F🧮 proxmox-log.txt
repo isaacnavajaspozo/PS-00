@@ -1,0 +1,39 @@
+# en este servidor
+vim /etc/rsyslog.conf
+---------------------------------------------------------
+# Habilitar recepción UDP (puerto 514)
+module(load="imudp")
+input(type="imudp" port="514")
+
+# Habilitar recepción TCP (puerto 514)
+module(load="imtcp")
+input(type="imtcp" port="514")
+
+# Opcional: Guardar logs remotos en archivos por host
+$template RemoteLogs,"/var/log/remote/%HOSTNAME%/%PROGRAMNAME%.log"
+*.* ?RemoteLogs
+& stop
+---------------------------------------------------------
+
+mkdir -p /var/log/remote
+chown syslog:adm /var/log/remote
+chmod 750 /var/log/remote
+
+# en los demás servidores
+# Edito /etc/rsyslog.conf o añade archivo en /etc/rsyslog.d/
+vim /etc/rsyslog.conf
+---------------------------------------------------------
+*.* @IP_DEL_SERVIDOR_RSYSLOG:514      # envío UDP
+# o para TCP (más fiable)
+*.* @@IP_DEL_SERVIDOR_RSYSLOG:514
+---------------------------------------------------------
+systemctl restart rsyslog
+
+# firewall
+iptables -A INPUT -p tcp --dport 514 -j ACCEPT
+iptables -A INPUT -p udp --dport 514 -j ACCEPT
+
+#en el servidor log compruebo que llegan logs 
+ls /var/log/remote/
+tail -f /var/log/remote/<hostname>/<programa>.log
+
